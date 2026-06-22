@@ -62,8 +62,36 @@ Real problems encountered while building this homelab, documented as they were s
 
 ---
 
+---
+
+## ASUS RT-AC68U: Factory Reset Wouldn't Take
+
+**Symptom:** After a standard factory reset (holding the reset button while powered on), the router's WiFi never came back, the power LED kept blinking indefinitely, and previously-configured custom SSIDs ("The Matrix," "Johnny Mnemonic" — leftover from the router's prior owner) briefly disappeared and reappeared inconsistently across multiple reset attempts.
+
+**Investigation:**
+- A standard reset attempt left the router in an unstable state — WAN light active, but no WiFi broadcasting and wired LAN ports flapping (connecting briefly, then dropping)
+- A full power cycle (unplug, wait 30 seconds, replug) was required in addition to the reset itself before WiFi finally returned, broadcasting under the correct factory defaults ("ASUS" / "ASUS_5G") found printed on the physical product label
+
+**Fix:** Combined a standard factory reset with a full power cycle, then allowed several minutes of uninterrupted boot time before evaluating the router's state. Confirmed success only once the default factory SSIDs appeared, rather than assuming a reset had succeeded based on LED behavior alone.
+
+---
+
+## ASUS RT-AC68U: Internet Status Showed "IP Conflict Detected"
+
+**Symptom:** After successfully resetting and reconfiguring the router with new SSIDs and a WAN connection physically wired to a secondary modem/router, the dashboard reported "Internet status: IP conflict detected," despite a confirmed working physical connection on both ends.
+
+**Investigation:**
+- Verified the physical link was good by testing the cable and both ports independently (swapping cables, testing ports directly with a laptop)
+- Determined the issue was logical, not physical: the ASUS's default LAN IP (192.168.1.1) was identical to the upstream router's LAN IP, causing an address collision between the two devices
+
+**Fix:** Changed the ASUS's LAN IP address to a different subnet, resolving the conflict immediately and bringing the internet connection online.
+
+---
+
 ## Lessons Learned
 
+- When troubleshooting secondhand networking hardware, don't trust LED status alone — a device can appear "on" and partially functional while still being in a broken or incomplete internal state
+- Two routers on the same local network will conflict if they share default IP ranges; this is a common and easily overlooked issue when introducing a second router behind an existing one
 - When a service fails mysteriously, check the actual logs before guessing — `journalctl`, application-specific log files, and direct API queries (like TrueNAS's `midclt`) consistently revealed the real cause faster than trial and error
 - Virtualized environments can introduce quirks (blank disk serials, localhost-only binding) that wouldn't occur on bare metal — always verify assumptions about networking and hardware identification in a VM context
 - Outdated packages (like the old TightVNC implementation) can cause problems that look like configuration errors but are actually compatibility issues — worth checking if a more modern alternative exists
