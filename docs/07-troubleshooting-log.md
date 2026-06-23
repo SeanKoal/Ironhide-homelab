@@ -88,8 +88,33 @@ Real problems encountered while building this homelab, documented as they were s
 
 ---
 
+## Network Migration: Ironhide Lost Connectivity After Moving to the ASUS Network
+
+**Symptom:** After physically moving Ironhide's ethernet cable from the original network to the newly configured ASUS standalone network, Ironhide became unreachable both locally and via Tailscale, despite a healthy physical link light on the new connection.
+
+**Investigation:**
+- Confirmed the physical link was active and the correct new IP was assigned to the physical interface (`nic0`) after manually forcing a DHCP renewal
+- Despite the correct IP on `nic0`, the host still could not reach its own gateway or the internet
+- Checked `ip route show` and found a stale default route still pointing to the old gateway — manually deleting it and forcing a fresh DHCP renewal corrected the route, but connectivity still failed
+- The actual root cause was found in `/etc/network/interfaces`: Proxmox's network bridge (`vmbr0`) — which the host and all VMs actually communicate through — was hardcoded with a static IP and gateway from the old network, completely independent of whatever the physical interface (`nic0`) was doing
+
+**Fix:** Edited `/etc/network/interfaces` directly, updating the `vmbr0` bridge's static `address` and `gateway` lines to match the new network, then restarted networking. This was the actual fix — `nic0`'s configuration alone was never going to resolve it, since the bridge is what the host and VMs genuinely depend on.
+
+---
+
+## Network Migration: VMs Stayed Offline on Tailscale After the Host Recovered
+
+**Symptom:** After fixing Ironhide's bridge configuration and restoring host-level connectivity, all three VMs (Ubuntu Server, Kali, TrueNAS) remained offline on Tailscale, each still showing their old, stale IP addresses internally.
+
+**Investigation:**
+- Checked each VM's network configuration via `qm config <vmid>` on the Proxmox host and found every VM had `firewall=1` set on its network device — Proxmox's per-VM firewall flag, separate from the host-level firewall (which had already been confirmed disabled)
+- This per-VM firewall flag was blocking DHCP traffic for each VM individually, preventing
+
 ## Lessons Learned
 
+- A host can have a perfectly correct IP on its physical network interface while still being completely unreachable — Proxmox's virtual bridge (`vmbr0`) is what actually carries traffic for the host and all VMs, and it can hold its own independent, stale configuration separate from the physical interface
+- Proxmox firewalls exist at two separate levels — host-wide and per-VM — and disabling one does not affect the other; both need to be checked independently when diagnosing connectivity issues
+- After any major network topology change (new subnet, new gateway), don't assume devices will automatically renew their DHCP leases — Linux network managers often hold onto stale configuration until explicitly forced to flush and request a new lease
 - When troubleshooting secondhand networking hardware, don't trust LED status alone — a device can appear "on" and partially functional while still being in a broken or incomplete internal state
 - Two routers on the same local network will conflict if they share default IP ranges; this is a common and easily overlooked issue when introducing a second router behind an existing one
 - When a service fails mysteriously, check the actual logs before guessing — `journalctl`, application-specific log files, and direct API queries (like TrueNAS's `midclt`) consistently revealed the real cause faster than trial and error
