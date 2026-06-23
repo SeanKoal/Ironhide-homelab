@@ -62,8 +62,6 @@ Real problems encountered while building this homelab, documented as they were s
 
 ---
 
----
-
 ## ASUS RT-AC68U: Factory Reset Wouldn't Take
 
 **Symptom:** After a standard factory reset (holding the reset button while powered on), the router's WiFi never came back, the power LED kept blinking indefinitely, and previously-configured custom SSIDs ("The Matrix," "Johnny Mnemonic" — leftover from the router's prior owner) briefly disappeared and reappeared inconsistently across multiple reset attempts.
