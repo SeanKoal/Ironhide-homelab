@@ -35,6 +35,13 @@ This repo tracks the build, configuration, and ongoing development of my home Pr
 - ⬜ BIOS update pending
 - ⬜ Additional networking hardware setup
 
+## What It Hosts
+
+Ironhide doesn't just run VMs for the sake of it — it actually serves things. Right now:
+
+- **[seaksolutions.dev](https://seaksolutions.dev)** — my live portfolio and business site, hand-coded HTML/CSS/JS, served by Nginx on the Ubuntu Server VM, exposed to the public internet through a Cloudflare Tunnel (no open ports on my router). Hardened with UFW, fail2ban, and automatic security updates.
+  Source: **[github.com/SeanKoal/seak-solutions-website](https://github.com/SeanKoal/seak-solutions-website)**
+
 ## Documentation
 
 More detailed write-ups coming soon in the `/docs` folder, including hardware build notes, networking setup, and a troubleshooting log of real problems solved along the way.
