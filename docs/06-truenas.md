@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A dedicated Network Attached Storage system, managing the Seagate IronWolf 2TB drive. Intended as centralized, private storage accessible only by me, with future plans to add network shares and self-hosted apps.
+A dedicated Network Attached Storage system, managing the Seagate IronWolf 2TB drive. Intended as centralized, private storage accessible only by me, with an authenticated SMB share now live, and future plans to explore self-hosted apps.
 
 ## Specs
 
@@ -30,6 +30,10 @@ Resolved by using TrueNAS's internal management API directly (`midclt`) to set a
 
 Pool creation initially failed with a "duplicate serial number" error, caused by both the OS disk and the passed-through IronWolf reporting blank serial numbers in this virtualized context. Fixed by explicitly assigning a serial number to the passthrough disk at the Proxmox level.
 
+### SMB Permission Reset
+
+After applying an ACL preset to set ownership, the dataset's owner/group silently reverted to `root`, which blocked SMB access even with correct credentials (Windows returned "permission denied" despite successful authentication). Resolved by manually re-setting owner and owner group to `seankoal` after applying the preset, rather than relying on the preset alone.
+
 ## Storage Pool
 
 - **Pool name:** `ironwolf-pool`
@@ -39,8 +43,9 @@ Pool creation initially failed with a "duplicate serial number" error, caused by
 ## Access
 
 - Web UI and Tailscale installed via TrueNAS SCALE's containerized **Apps** system, since the underlying OS is intentionally immutable/read-only and blocks direct package installation
-- Currently accessed exclusively via Tailscale; no local network shares configured yet, keeping storage private to a single authorized user
+- Accessible both locally and via Tailscale
+- A single authenticated SMB share (`storage`) is live, locked to one user account (`seankoal`) with explicit ownership and permissions — tested end to end from Soundwave with full read/write/delete access
 
 ## Current Use
 
-Storage pool is live and ready. Next steps include setting up authenticated network shares (SMB) for actual file access from Magnus and Soundwave, and exploring TrueNAS's app ecosystem.
+Storage pool is live, with a working authenticated SMB share in daily use for general file storage. Next steps include exploring TrueNAS's app ecosystem and potentially expanding to additional users or dedicated folders if needed.
