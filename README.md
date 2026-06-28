@@ -31,7 +31,7 @@ This repo tracks the build, configuration, and ongoing development of my home Pr
 - ✅ Tailscale mesh network across all devices
 - ✅ Ubuntu Server VM — running, SSH accessible
 - ✅ Kali Linux VM — running, SSH + VNC desktop
-- ✅ TrueNAS VM — running, storage pool configured
+- ✅ TrueNAS VM — running, storage pool configured, authenticated SMB share live and in use
 - ⬜ BIOS update pending
 - ⬜ Additional networking hardware setup
 
